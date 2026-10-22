@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -39,24 +40,30 @@ class AuthController extends Controller
 
     public function registrarDriver(RegisterDriverRequest $request): JsonResponse
     {
-        $motorista = Driver::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password_hash' => Hash::make($request->password),
-            'cnh' => $request->cnh,
-            'phone' => $request->phone,
-            'address' => $request->address,
-            'status_online' => false,
-        ]);
-
-        if ($request->filled('vehicle_type') || $request->filled('license_plate')) {
-            Vehicle::create([
-                'driver_id' => $motorista->driver_id,
-                'vehicle_type' => $request->vehicle_type,
-                'license_plate' => $request->license_plate,
-                'capacity_load_kg' => $request->capacity_load_kg,
+        $motorista = DB::transaction(function () use ($request): Driver {
+            $motorista = Driver::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password_hash' => Hash::make($request->password),
+                'cnh' => $request->cnh,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'status_online' => false,
             ]);
-        }
+
+            if ($request->filled('vehicle_type')
+                || $request->filled('license_plate')
+                || $request->filled('capacity_load_kg')) {
+                Vehicle::create([
+                    'driver_id' => $motorista->driver_id,
+                    'vehicle_type' => $request->vehicle_type,
+                    'license_plate' => $request->license_plate,
+                    'capacity_load_kg' => $request->capacity_load_kg,
+                ]);
+            }
+
+            return $motorista;
+        });
 
         $motorista->load('vehicles');
         $token = $motorista->createToken('fretar-driver')->plainTextToken;

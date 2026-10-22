@@ -34,7 +34,7 @@ return new class extends Migration
         DB::statement("ALTER TABLE payments
             ALTER COLUMN payment_status SET DEFAULT 'pending'::payment_status");
         DB::statement('ALTER TABLE payments
-            ADD CONSTRAINT chk_payment_value CHECK (value >= 0)');
+            ADD CONSTRAINT chk_payment_value CHECK (value > 0)');
 
         DB::statement('CREATE UNIQUE INDEX payments_stripe_payment_intent_id_unique ON payments (stripe_payment_intent_id)');
         DB::statement('CREATE INDEX payments_shipping_id_index ON payments (shipping_id)');

@@ -41,6 +41,24 @@ class PaymentApiTest extends TestCase
         $this->assertNull($salvo->card_number);
     }
 
+    public function test_nao_permite_reutilizar_token_de_metodo_de_pagamento(): void
+    {
+        PaymentMethod::create([
+            'user_id' => $this->usuario->user_id,
+            'stripe_customer_id' => 'cus_mock_x',
+            'stripe_payment_method_id' => 'pm_duplicado',
+            'type' => 'card',
+        ]);
+
+        $this->actingAs($this->usuario, 'sanctum')
+            ->postJson('/api/me/payment-methods', [
+                'stripe_payment_method_id' => 'pm_duplicado',
+                'type' => 'card',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['stripe_payment_method_id']);
+    }
+
     public function test_criar_payment_intent_mock_e_confirmar(): void
     {
         $metodo = PaymentMethod::create([

@@ -8,6 +8,7 @@ use App\Models\PaymentMethod;
 use App\Models\Shipping;
 use App\Models\User;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class PaymentService
@@ -39,21 +40,25 @@ class PaymentService
             abort(403, 'Método de pagamento não pertence a você.');
         }
 
-        if ((float) $shipping->value < 0) {
+        if ((float) $shipping->value <= 0) {
             throw ValidationException::withMessages(['value' => 'Valor inválido.']);
         }
 
-        $payment = Payment::create([
-            'shipping_id' => $shipping->shipping_id,
-            'payment_method_id' => $metodo->payment_method_id,
-            'value' => $shipping->value,
-            'payment_status' => PaymentStatus::Pending,
-        ]);
+        $payment = DB::transaction(function () use ($shipping, $metodo): Payment {
+            $payment = Payment::create([
+                'shipping_id' => $shipping->shipping_id,
+                'payment_method_id' => $metodo->payment_method_id,
+                'value' => $shipping->value,
+                'payment_status' => PaymentStatus::Pending,
+            ]);
 
-        $payment->update([
-            'stripe_payment_intent_id' => $this->criarIntentStripe($payment, $metodo),
-            'payment_status' => PaymentStatus::Processing,
-        ]);
+            $payment->update([
+                'stripe_payment_intent_id' => $this->criarIntentStripe($payment, $metodo),
+                'payment_status' => PaymentStatus::Processing,
+            ]);
+
+            return $payment;
+        });
 
         return $payment->refresh();
     }
@@ -75,6 +80,12 @@ class PaymentService
             ]);
 
             return $payment->refresh();
+        }
+
+        if (! $payment->stripe_payment_intent_id) {
+            throw ValidationException::withMessages([
+                'payment' => 'Pagamento sem PaymentIntent válido.',
+            ]);
         }
 
         // Caminho real: consulta o status do PaymentIntent no Stripe.
@@ -118,7 +129,10 @@ class PaymentService
     {
         $secret = config('services.stripe.secret');
 
-        return (bool) config('services.stripe.mock_enabled') || ! $secret || ! class_exists(\Stripe\StripeClient::class);
+        return app()->environment(['local', 'testing'])
+            && ((bool) config('services.stripe.mock_enabled')
+                || ! $secret
+                || ! class_exists(\Stripe\StripeClient::class));
     }
 
     private function clienteStripe(): \Stripe\StripeClient

@@ -35,7 +35,7 @@ return new class extends Migration
         DB::statement("ALTER TABLE shippings
             ALTER COLUMN status SET DEFAULT 'pending'::shipping_status");
         DB::statement('ALTER TABLE shippings
-            ADD CONSTRAINT chk_shipping_value CHECK (value >= 0)');
+            ADD CONSTRAINT chk_shipping_value CHECK (value > 0)');
 
         DB::statement('CREATE INDEX shippings_user_id_index ON shippings (user_id)');
         DB::statement('CREATE INDEX shippings_driver_id_index ON shippings (driver_id)');

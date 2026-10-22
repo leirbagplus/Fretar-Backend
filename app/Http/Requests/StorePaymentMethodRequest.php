@@ -16,7 +16,11 @@ class StorePaymentMethodRequest extends FormRequest
     {
         return [
             'stripe_customer_id' => ['nullable', 'string'],
-            'stripe_payment_method_id' => ['required', 'string'],
+            'stripe_payment_method_id' => [
+                'required',
+                'string',
+                Rule::unique('payment_methods', 'stripe_payment_method_id'),
+            ],
             'type' => ['required', 'string', 'max:30'],
             'last_4_digits' => ['nullable', 'string', 'digits:4'],
             'card_brand' => ['nullable', 'string', 'max:30'],

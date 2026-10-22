@@ -5,7 +5,7 @@ return [
     'stripe' => [
         'secret' => env('STRIPE_SECRET_KEY'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
-        // Se true e nao houver STRIPE_SECRET_KEY, gera PaymentIntents mock (pi_mock_*).
+        // Habilite explicitamente apenas em desenvolvimento/testes.
         'mock_enabled' => env('STRIPE_MOCK_ENABLED', true),
     ],
 

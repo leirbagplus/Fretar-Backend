@@ -22,7 +22,7 @@ class StoreShippingRequest extends FormRequest
             'destination_lng' => ['nullable', 'numeric', 'between:-180,180'],
             'about_load' => ['nullable', 'string'],
             'recommended_vehicle' => ['nullable', 'string', 'max:100'],
-            'value' => ['required', 'numeric', 'min:0'],
+            'value' => ['required', 'numeric', 'gt:0'],
         ];
     }
 }

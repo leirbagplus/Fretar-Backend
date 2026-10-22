@@ -40,7 +40,9 @@ class RegisterDriverRequest extends FormRequest
     public function withValidator($validator): void
     {
         // Veiculo e opcional no cadastro, mas se informado exige placa, tipo e capacidade.
-        $veiculoInformado = fn ($input) => filled($input->vehicle_type) || filled($input->license_plate);
+        $veiculoInformado = fn ($input) => filled($input->vehicle_type)
+            || filled($input->license_plate)
+            || filled($input->capacity_load_kg);
         $validator->sometimes('license_plate', 'required', $veiculoInformado);
         $validator->sometimes('vehicle_type', 'required', $veiculoInformado);
         $validator->sometimes('capacity_load_kg', 'required', $veiculoInformado);

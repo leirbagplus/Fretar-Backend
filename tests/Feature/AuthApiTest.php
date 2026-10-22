@@ -73,6 +73,19 @@ class AuthApiTest extends TestCase
         $this->assertDatabaseCount('vehicles', 1);
     }
 
+    public function test_cadastro_de_motorista_exige_dados_completos_do_veiculo(): void
+    {
+        $this->postJson('/api/auth/register/driver', [
+            'name' => 'Jorge Motorista',
+            'email' => 'jorge@fretar.com',
+            'password' => 'secret123',
+            'password_confirmation' => 'secret123',
+            'cnh' => '12345678901',
+            'capacity_load_kg' => 1200,
+        ])->assertStatus(422)
+            ->assertJsonValidationErrors(['vehicle_type', 'license_plate']);
+    }
+
     public function test_login_com_credenciais_invalidas_retorna_401(): void
     {
         $this->postJson('/api/auth/login', [
