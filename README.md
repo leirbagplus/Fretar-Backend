@@ -164,3 +164,4 @@ Nunca versionar o arquivo `.env` nem chaves secretas.
 - A execução de containers na Vercel e o plano gratuito têm limites e estão sujeitos a mudanças.
 - Ideias futuras: oferecer o frete ao motorista mais próximo, botão online/offline, localização
   do motorista no mapa em tempo real, notificações, repasse automático.
+  
