@@ -1,0 +1,8 @@
+node_modules/
+vendor/
+dist/
+.env
+.env.*
+!.env.example
+composer.phar
+.vercel
